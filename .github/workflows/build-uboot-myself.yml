@@ -1,0 +1,96 @@
+name: Build U-Boot for sdm660 devices
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - v*-sdm660
+      - master-sdm660
+      - oppo-r11
+    tags:
+      - v*-sdm660
+  workflow_dispatch:
+
+jobs:
+  build-uboot:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            make \
+            git \
+            device-tree-compiler \
+            flex \
+            bison \
+            libssl-dev \
+            bc \
+            libgnutls28-dev \
+            pkg-config
+
+      - name: Checkout source from git
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+
+      - name: Print debug info
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "GITHUB_BASE_REF:  $GITHUB_BASE_REF"
+          echo "GITHUB_HEAD_REF:  $GITHUB_HEAD_REF"
+          echo "GITHUB_REF:       $GITHUB_REF"
+          echo "Cross-gcc version:"
+          aarch64-linux-gnu-gcc --version
+
+      - name: Prepare .config using generic sdm660-phone config for upstream DTS
+        run: |
+          mkdir -p .output
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config
+
+      - name: Build u-boot with upstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output DEVICE_TREE=qcom/sda660-eebbk-h7000 -j$(nproc)
+
+      - name: Prepare .config using generic sdm660-phone config for downstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config debug-sda660-eebbk-h7000-ramoops.config
+
+      - name: Build u-boot with downstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output -j$(nproc)
+
+      - name: List all compiled upstream DTBs
+        run: |
+          echo "Contents of .output/dts/upstream/src/arm64/qcom/ :"
+          ls -l .output/dts/upstream/src/arm64/qcom/sda660-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm630-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm636-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm660-*.dtb
+      - name: List all compiled downstream DTBs
+        run: |
+          echo "Contents of .output/arch/arm/dts/qcom/ :"
+          ls -l .output/arch/arm/dts/qcom/*.dtb
+
+      - name: Upload build artifacts(dtb1)
+        uses: actions/upload-artifact@v4
+        with:
+          name: u-boot-downstream-dtbs
+          path: .output/arch/arm/dts/qcom/*.dtb
+          retention-days: 7
+
+      - name: Upload build artifacts(image)
+        uses: actions/upload-artifact@v4
+        with:
+          name: u-boot-build
+          path: .output/u-boot-nodtb.bin
+          retention-days: 7
+          
+      - name: Upload build artifacts(dtb2)
+        uses: actions/upload-artifact@v4
+        with:
+          name: u-boot-upstream-dtbs
+          path: .output/dts/upstream/src/arm64/qcom/*.dtb
+          retention-days: 7
