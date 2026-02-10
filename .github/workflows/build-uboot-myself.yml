@@ -56,7 +56,7 @@ jobs:
 
       - name: Prepare .config using generic sdm660-phone config for downstream DTS
         run: |
-          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config debug-sda660-eebbk-h7000-ramoops.config
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config debug-sdm660-oppo-16051-ramoops.config
 
       - name: Build u-boot with downstream DTS
         run: |
