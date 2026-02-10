@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
-* Copyright (c) 2025, Wenhao Shi <3329989998@qq.com>
+* Copyright (c) 2025, XiKoTaSu <3329989998@qq.com>
 */
 
 /dts-v1/;
@@ -206,13 +206,6 @@
 
 &pm660_charger {
 	monitored-battery = <&battery>;
-
-	status = "okay";
-};
-
-&pm660_fg {
-	monitored-battery = <&battery>;
-	power-supplies = <&pm660_charger>;
 
 	status = "okay";
 };
