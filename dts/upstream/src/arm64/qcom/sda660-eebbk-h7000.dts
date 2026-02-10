@@ -12,10 +12,6 @@
 #include <dt-bindings/input/gpio-keys.h>
 #include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
 
-/delete-node/ &adsp_region;
-/delete-node/ &mba_region;
-/delete-node/ &zap_shader_region;
-
 / {
 	model = "EEBBK S5";
 	compatible = "eebbk,h7000", "qcom,sda660";
@@ -101,27 +97,6 @@
 			reg = <0x0 0x9d400000 0x0 0x2400000>;
 			no-map;
 		};
-		
-		adsp_region: adsp@92a00000 {
-			reg = <0x0 0x92a00000 0x0 0x1e00000>;
-			no-map;
-		};
-
-		mba_region: mba@94800000 {
-			reg = <0x0 0x94800000 0x0 0x200000>;
-			no-map;
-		};
-
-		cdsp_region: cdsp@94b00000 {
-			reg = <0x00 0x94b00000 0x00 0x600000>;
-			no-map;
-		};
-		
-		zap_shader_region: gpu@fa800000 {
-			compatible = "shared-dma-pool";
-			reg = <0x0 0xfa800000 0x0 0x2000>;
-			no-map;
-		};
 	};
 };
 
@@ -133,15 +108,6 @@
 		input-enable;
 		qcom,drive-strength = <PMIC_GPIO_STRENGTH_NO>;
 	};
-};
-
-&adreno_gpu {
-	status = "okay";
-};
-
-&adreno_gpu_zap {
-	firmware-name = "a512_zap.mdt";
-	memory-region = <&zap_shader_region>;
 };
 
 &mdss {
